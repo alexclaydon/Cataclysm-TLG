@@ -141,11 +141,14 @@ struct overmap_draw_data_t {
     tripoint_abs_omt cursor_pos = tripoint_abs_omt( -1, -1, -1 );
     //the UI adaptor for the overmap; this can keep the overmap displayed while turns are processed
     std::shared_ptr<ui_adaptor> ui;
-    input_context ictxt;
+    // Non-owning; points at ::display()'s session-local context so the overmap
+    // context sits on TOP of the input context stack while the map is open.
+    // A persistent member here was constructed at game start and ended up deep
+    // in the stack, so gamepad radial menus resolved the wrong context.
+    input_context *ictxt = nullptr;
 
     overmap_draw_data_t() {
         ui = std::make_shared<ui_adaptor>();
-        ictxt = input_context( "OVERMAP" );
     }
 };
 

@@ -1254,7 +1254,10 @@ static void draw( overmap_draw_data_t &data )
     if( ui == nullptr ) {
         return;
     }
-    draw_om_sidebar( *ui, g->w_omlegend, data.ictxt, data );
+    if( data.ictxt == nullptr ) {
+        return;
+    }
+    draw_om_sidebar( *ui, g->w_omlegend, *data.ictxt, data );
 #if defined( TILES )
     if( use_tiles && use_tiles_overmap ) {
         redraw_info = tiles_redraw_info { data.cursor_pos, uistate.overmap_show_overlays };
@@ -1956,7 +1959,11 @@ static tripoint_abs_omt display()
     tripoint_abs_omt &orig = data.origin_pos;
     std::vector<tripoint_abs_omt> &display_path = data.display_path;
     tripoint_abs_omt &select = data.select;
-    input_context &ictxt = data.ictxt;
+    input_context ictxt( "OVERMAP" );
+    data.ictxt = &ictxt;
+    on_out_of_scope reset_ictxt( [&]() {
+        data.ictxt = nullptr;
+    } );
 
     const int previous_zoom = g->get_zoom();
     g->set_zoom( overmap_zoom_level );
