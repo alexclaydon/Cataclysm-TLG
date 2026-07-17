@@ -147,9 +147,13 @@ struct overmap_draw_data_t {
     // in the stack, so gamepad radial menus resolved the wrong context.
     input_context *ictxt = nullptr;
 
-    overmap_draw_data_t() {
-        ui = std::make_shared<ui_adaptor>();
-    }
+    // No eager ui_adaptor here: every ui_adaptor sits on the global UI stack,
+    // and gamepad::is_in_menu() is `ui_stack_size() > 1` — an adaptor created
+    // at game start makes the whole game read as "in a menu" (d-pad
+    // synthesizes arrows and moves the player, Select sends ESC instead of
+    // map). ::display() assigns the adaptor for the session; draw() and
+    // teardown already null-check/reset it.
+    overmap_draw_data_t() = default;
 };
 
 #if defined(TILES)
